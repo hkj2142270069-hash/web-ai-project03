@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.t.mapper.ClazzMapper">
+    <update id="update">
+         update clazz
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="room != null">room = #{room},</if>
+            <if test="beginDate != null">begin_date = #{beginDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="masterId != null">master_id = #{masterId},</if>
+            <if test="subject != null">subject = #{subject},</if>
+        </set>
+        where id = #{id}
+
+    </update>
+    <delete id="delete">
+        delete from clazz where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+    <select id="list" resultType="org.example.t.pojo.Clazz">
+        SELECT
+        e.id,
+        e.name,
+        e.room,
+        e.begin_date AS beginDate,
+        e.end_date AS endDate,
+        e.master_id AS masterId,
+        e.subject, <!-- 添加这一行 -->
+        e.create_time AS createTime,
+        e.update_time AS updateTime,
+        emp.name AS masterName,
+        COUNT(s.id) AS studentCount,
+        CASE
+        WHEN e.begin_date > CURDATE() THEN '未开班'
+        WHEN e.end_date &lt; CURDATE() THEN '已结课'
+        ELSE '进行中'
+        END AS status
+        FROM clazz e
+        LEFT JOIN emp emp ON e.master_id = emp.id
+        LEFT JOIN student s ON e.id = s.clazz_id
+        <where>
+            <if test="name != null and name != ''">
+                AND e.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="begin != null">
+                AND e.begin_date >= #{begin}
+            </if>
+            <if test="end != null">
+                AND e.end_date &lt;= #{end}
+            </if>
+        </where>
+        GROUP BY e.id, e.name, e.room, e.begin_date, e.end_date, e.master_id, e.subject, e.create_time, e.update_time, emp.name
+    </select>
+
+    <select id="getAllClazzs" resultType="org.example.t.pojo.Clazz">
+        SELECT
+            emp.name AS masterName,
+            e.name,
+            e.room,
+            e.begin_date AS beginDate,
+            e.end_date AS endDate,
+            e.master_id AS masterId,
+            e.subject,
+            e.create_time AS createTime,
+            e.update_time AS updateTime,
+            e.id,
+            CASE
+                WHEN e.begin_date > CURDATE() THEN '未开班'
+                WHEN e.end_date &lt; CURDATE() THEN '已结课'
+                ELSE '进行中'
+                END AS status
+        FROM clazz e
+                 LEFT JOIN emp emp ON e.master_id = emp.id
+    </select>
+    <select id="getById" resultType="org.example.t.pojo.Clazz">
+        SELECT
+            id,
+            name,
+            room,
+            begin_date AS beginDate,
+            end_date AS endDate,
+            master_id AS masterId,
+            subject,
+            create_time AS createTime,
+            update_time AS updateTime
+        FROM clazz
+        WHERE id = #{id}
+    </select>
+    <select id="countStudentsByClazzId" resultType="int">
+        SELECT COUNT(*) FROM student WHERE clazz_id = #{clazzId}
+    </select>
+
+
+</mapper>

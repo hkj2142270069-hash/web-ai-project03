@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.t.mapper.StudentsMapper">
+    <insert id="add">
+        INSERT INTO student (
+            name, no, gender, phone, degree, id_card,
+            is_college, address, graduation_date, violation_count, violation_score,
+            clazz_id, create_time, update_time
+        ) VALUES (
+                     #{name}, #{no}, #{gender}, #{phone}, #{degree}, #{idCard},
+                     #{isCollege}, #{address}, #{graduationDate}, #{violationCount}, #{violationScore},
+                     #{clazzId}, #{createTime}, #{updateTime}
+                 )
+    </insert>
+    <update id="update">
+
+UPDATE student
+SET
+    name = #{name}, no = #{no}, gender = #{gender}, phone = #{phone}, degree = #{degree}, id_card = #{idCard},
+    is_college = #{isCollege}, address = #{address}, graduation_date = #{graduationDate},
+    violation_count = #{violationCount}, violation_score = #{violationScore},
+    clazz_id = #{clazzId}, update_time = #{updateTime}
+WHERE id = #{id}
+    </update>
+    <delete id="delete">
+DELETE FROM student WHERE id IN
+<foreach collection="ids" item="id" open="(" close=")" separator=",">
+    #{id}
+</foreach>
+
+
+
+
+    </delete>
+
+
+    <select id="list" resultType="org.example.t.pojo.Student">
+        SELECT
+        id, name, no, gender, phone, degree, id_card as idCard,
+        is_college as isCollege, address, graduation_date as graduationDate,
+        violation_count as violationCount, violation_score as violationScore,
+        clazz_id as clazzId, create_time as createTime, update_time as updateTime
+        FROM student
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="no != null and no != ''">
+                AND no LIKE CONCAT('%', #{no}, '%')
+            </if>
+            <if test="degree != null">
+                AND degree = #{degree}
+            </if>
+            <if test="clazzId != null">
+                AND clazz_id = #{clazzId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    <select id="getInfo" resultType="org.example.t.pojo.Student">
+SELECT
+        id, name, no, gender, phone, degree, id_card as idCard,
+        is_college as isCollege, address, graduation_date as graduationDate,
+        violation_count as violationCount, violation_score as violationScore,
+        clazz_id as clazzId, create_time as createTime, update_time as updateTime
+        FROM student
+        WHERE id = #{id}
+
+
+    </select>
+</mapper>
